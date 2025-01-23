@@ -16,17 +16,24 @@ const MotorControl = () => {
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
-      <h1>Motor Control</h1>
+      <h1
+        style={{
+          padding: "10px 20px",
+          color: "white",
+        }}
+      >
+        Motor Control:
+      </h1>
       <button
         onClick={handleMotorStart}
         style={{
           padding: "10px 20px",
-          backgroundColor: "#4CAF50",
+          backgroundColor: "#F36C45",
           color: "white",
           border: "none",
-          borderRadius: "5px",
+          borderRadius: "10px",
           cursor: "pointer",
-          fontSize: "16px",
+          fontSize: "20px",
         }}
       >
         Start Motor

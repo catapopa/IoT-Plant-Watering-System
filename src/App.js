@@ -1,16 +1,14 @@
 import React from "react";
-import SensorDataDisplay from "./components/SensorDataDisplay";
+import SensorDataDisplay from "./components/SensorDataDisplay/SensorDataDisplay";
 import WeatherForecast from "./components/WeatherForecast";
 import MotorControl from "./components/MotorControl";
 
 const App = () => {
   return (
-    <div>
-      <SensorDataDisplay />
-      <hr style={{ margin: "20px 0" }} />
-      <WeatherForecast />
-      <hr style={{ margin: "20px 0" }} />
+    <div style={{ backgroundColor: "#1E1645" }}>
       <MotorControl />
+      <SensorDataDisplay />
+      <WeatherForecast />
     </div>
   );
 };
