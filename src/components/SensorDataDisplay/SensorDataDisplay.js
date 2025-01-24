@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import mqtt from "mqtt";
 import { Card, CardContent, Typography, Grid, Paper, Box } from "@mui/material";
 import { Line } from "react-chartjs-2";
 import {
@@ -20,6 +19,7 @@ import {
   typographyPrimaryStyle,
   typographySecondaryStyle,
 } from "./styles"; // Import styles
+import { fetchSensorData } from "../../api/sensor";
 
 ChartJS.register(
   CategoryScale,
@@ -31,9 +31,6 @@ ChartJS.register(
   Legend
 );
 
-const MQTT_BROKER_URL = "ws://broker.hivemq.com:8000/mqtt"; // WebSocket URL
-const SENSOR_TOPIC = "home/raspberrypi/sensor";
-
 const FirstPanel = () => {
   const [temperature, setTemperature] = useState(null);
   const [humidity, setHumidity] = useState(null);
@@ -41,51 +38,37 @@ const FirstPanel = () => {
   const [tempData, setTempData] = useState([]);
   const [humData, setHumData] = useState([]);
 
-  // MQTT setup for fetching data
-  useEffect(() => {
-    const client = mqtt.connect(MQTT_BROKER_URL);
+  const fetchData = async () => {
+    try {
+      const { temperature, humidity } = await fetchSensorData();
 
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-      client.subscribe(SENSOR_TOPIC, (err) => {
-        if (err) setError("Failed to subscribe to topic");
+      setTemperature(temperature);
+      setHumidity(humidity);
+
+      // Update chart data
+      setTempData((prevData) => {
+        const updatedData = [...prevData, temperature];
+        return updatedData.length > 10 ? updatedData.slice(1) : updatedData; // Keep last 10 points
       });
-    });
 
-    client.on("message", (topic, message) => {
-      if (topic === SENSOR_TOPIC) {
-        try {
-          const payload = message.toString();
-          const [tempPart, humPart] = payload.split(";");
+      setHumData((prevData) => {
+        const updatedData = [...prevData, humidity];
+        return updatedData.length > 10 ? updatedData.slice(1) : updatedData; // Keep last 10 points
+      });
+    } catch (err) {
+      setError("Failed to fetch data");
+    }
+  };
 
-          const tempValue = parseFloat(tempPart.split(": ")[1].split(" ")[0]);
-          const humValue = parseFloat(humPart.split(": ")[1].replace("%", ""));
-
-          setTemperature(tempValue);
-          setHumidity(humValue);
-
-          // Update chart data with new values
-          setTempData((prevData) => [...prevData, tempValue]);
-          setHumData((prevData) => [...prevData, humValue]);
-
-          if (tempData.length > 10) {
-            setTempData((prevData) => prevData.slice(1)); // Keep last 10 points
-            setHumData((prevData) => prevData.slice(1));
-          }
-        } catch (e) {
-          console.error("Error parsing MQTT message:", e);
-          setError("Error processing sensor data");
-        }
-      }
-    });
-
-    client.on("error", (err) => setError(`MQTT Error: ${err.message}`));
-
-    return () => client.end(); // Cleanup on unmount
-  }, [tempData]);
+  // Poll API every 5 seconds
+  useEffect(() => {
+    fetchData(); // Fetch initial data
+    const interval = setInterval(fetchData, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, []);
 
   const chartData = {
-    labels: tempData.map((_, idx) => idx + 1), // Labeling with index (you can change this)
+    labels: tempData.map((_, idx) => idx + 1), // Labeling with index
     datasets: [
       {
         label: "Temperature (°C)",

@@ -1,7 +1,7 @@
 import React from "react";
 import SensorDataDisplay from "./components/SensorDataDisplay/SensorDataDisplay";
-import WeatherForecast from "./components/WeatherForecast";
-import MotorControl from "./components/MotorControl";
+import WeatherForecast from "./components/WeatherForecast/WeatherForecast";
+import MotorControl from "./components/MotorControl/MotorControl";
 
 const App = () => {
   return (
